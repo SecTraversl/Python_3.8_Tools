@@ -11,6 +11,6 @@ def format_header_block(string: str):
     newstring = ""
     newstring += "{0:#<39}".format("") + "\n"
     newstring += "{0:#^39}".format(f" {string} ") + "\n"
-    newstring += "{0:#<39}".format("") + "\n"
+    newstring += "{0:#<39}".format("") + "\n\n"
     print(newstring)
 
