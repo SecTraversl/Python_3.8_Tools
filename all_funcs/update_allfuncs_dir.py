@@ -64,8 +64,8 @@ def update_allfuncs_dir():
     for eachdir in thepath.glob('*'):
         if eachdir.is_dir() and eachdir.name.endswith('_funcs'):
             eachfuncsdir = eachdir
-            if eachfuncsdir.name == 'all_funcs' or eachfuncsdir.name == 'scapy_funcs':
-                # ignore these two directories
+            if eachfuncsdir.name == 'all_funcs' or eachfuncsdir.name == 'scapy_funcs' or eachfuncsdir.name == 'pil_image_analysis_funcs':
+                # ignore these directories
                 pass
             else:
                 # for each file ending in .py (these should be the individual function tools ending in .py), copy that file to the destination dir

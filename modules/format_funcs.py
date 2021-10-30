@@ -91,6 +91,24 @@ def format_with_braces(*vars: str):
 
 # %%
 #######################################
+def format_header_block_plus(string: str):
+    """Returns a header for use with my function files.
+
+    Example:
+        #######################################\n
+        ########### ARRAY FUNCTIONS ###########\n
+        #######################################\n
+
+    """
+    newstring = ""
+    newstring += "{0:#<39}".format("") + "\n"
+    newstring += "{0:#^39}".format(f" {string} ") + "\n"
+    newstring += "{0:#<39}".format("") + "\n\n"
+    
+    return newstring
+
+# %%
+#######################################
 def format_with_keywords(**kwvars: str):
     """This is a demo exercise of using format() with key/value pairs in order to insert variables into the string.
 

@@ -1,13 +1,14 @@
 # %%
 #######################################
 def new_module(source_dir: str, prepend_text=None):
-    """Creates a new module file consisting of all functions that reside in a given folder.  This tool is intended to receive the path of a given folder where the individual function .py files reside, and it will retrieve the content of each of those .py files, and put all of the content together in a single file in the "modules" directory (hard-coded in this script).  The new single file will have the same name as the given "source_dir" folder + the ".py" extension.
+    """Creates a new module file consisting of all functions that reside in a given folder.  This tool is intended to receive the path of a given folder where the individual function .py files reside, and it will retrieve the content of each of those .py files, and will put all of the content together in a single file in the "modules" directory (hard-coded within this script).  The new single 'module' file will have the same name as the given "source_dir" folder + the ".py" extension.  Additionally, the 'prepend_text' parameter can be used to add notes or import statements to the top of the module file (underneath the header, but before the functions are defined).
 
     Reference:
         https://stackoverflow.com/questions/47518669/create-new-folder-with-pathlib-and-write-files-into-it
 
     Args:
         source_dir (str): Reference the path of the directory where the function .py files reside
+        prepend_text (str, optional): Use this parameter in order to add text underneath the banner but before all of the functions, e.g. "from scapy.all import *". Defaults to None.
     """
     import pathlib
     
@@ -20,10 +21,10 @@ def new_module(source_dir: str, prepend_text=None):
     
     def new_module_header(source_dir_name: str):
         
-        def format_header_block(string: str):
-            """Prints a header for use with my function files
+        def format_header_block_plus(string: str):
+            """Returns a header for use with my function files.
 
-            Examples:
+            Example:
                 #######################################\n
                 ########### ARRAY FUNCTIONS ###########\n
                 #######################################\n
@@ -37,7 +38,7 @@ def new_module(source_dir: str, prepend_text=None):
             return newstring
         
         header_name = source_dir_name.replace('_', ' ').upper()
-        new_header = format_header_block(header_name)
+        new_header = format_header_block_plus(header_name)
         return new_header
     
     header_content = new_module_header(source_dir_pathobj.name)

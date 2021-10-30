@@ -3,6 +3,7 @@
 #######################################
 
 # NOTE: Excludes scapy functions.  To import scapy functions, use 'from scapy_funcs import *'
+# NOTE: Excludes pil image analysis functions.  To import pil image analysis functions, use 'from pil_image_analysis_funcs *'
 
 # %%
 #######################################
@@ -485,9 +486,14 @@ def update_module_files():
         if eachdir.is_dir() and eachdir.name.endswith('_funcs'):
             eachfuncsdir = eachdir
             if eachfuncsdir.name == 'all_funcs':
-                new_module(eachfuncsdir.as_posix(), prepend_text="# NOTE: Excludes scapy functions.  To import scapy functions, use 'from scapy_funcs import *'\n\n")
+                text_message = ''
+                text_message = text_message + "# NOTE: Excludes scapy functions.  To import scapy functions, use 'from scapy_funcs import *'\n"
+                text_message = text_message + "# NOTE: Excludes pil image analysis functions.  To import pil image analysis functions, use 'from pil_image_analysis_funcs *'\n\n"
+                new_module(eachfuncsdir.as_posix(), prepend_text=text_message)
             elif eachfuncsdir.name == 'scapy_funcs':
                 new_module(eachfuncsdir.as_posix(), prepend_text="from scapy.all import *\n\n")
+            elif eachfuncsdir.name == 'pil_image_analysis_funcs':
+                new_module(eachfuncsdir.as_posix(), prepend_text="from PIL import Image\nfrom PIL.ExifTags import TAGS\n\n")
             else:
                 new_module(eachfuncsdir.as_posix())# %%
 #######################################
@@ -897,6 +903,24 @@ def find_and_replace(findlist: str or list, replacelist: str or list, obj: str o
 
 # %%
 #######################################
+def get_modules_builtin():
+    """Returns a tuple of the built-in module names.
+
+    Example:
+        >>> get_modules_builtin()\n
+        ('_abc', '_ast', '_bisect', '_blake2', '_codecs', '_collections', '_csv', '_datetime', '_elementtree', '_functools', '_heapq', '_imp', '_io', '_locale', '_md5', '_operator', '_pickle', '_posixsubprocess', '_random', '_sha1', '_sha256', '_sha3', '_sha512', '_signal', '_socket', '_sre', '_stat', '_statistics', '_string', '_struct', '_symtable', '_thread', '_tracemalloc', '_warnings', '_weakref', 'array', 'atexit', 'binascii', 'builtins', 'cmath', 'errno', 'faulthandler', 'fcntl', 'gc', 'grp', 'itertools', 'marshal', 'math', 'posix', 'pwd', 'pyexpat', 'select', 'spwd', 'sys', 'syslog', 'time', 'unicodedata', 'xxsubtype', 'zlib')
+        
+    References:
+        https://stackoverflow.com/questions/8370206/how-to-get-a-list-of-built-in-modules-in-python
+
+    Returns:
+        tuple: Returns a tuple
+    """
+    import sys
+    return sys.builtin_module_names
+
+# %%
+#######################################
 def replace_hexadecimal_randomly(obj: str or list):
     """Takes a string of hexadecimal digits or a list of string hexadecimal digits and randomly replaces the string with one of equivalent length but different hexadecimal numbers.
 
@@ -1042,6 +1066,23 @@ def filehandle_append(thepath: str, content: str):
 
 
 appendtext = filehandle_append
+
+# %%
+#######################################
+def new_subprocess_demo():
+    """Here we demonstrate using subprocess to create a child Python process which calls the print() function within that child process.  The output from the print() function is returned as a string by subprocess.
+
+    Example:
+        >>> new_subprocess_demo()\n
+        'Hello, Guru\\nhow are you?\\n'
+
+    Returns:
+        str: Returns a string
+    """
+    import subprocess
+    prochandle = subprocess.Popen("python3 -I -c 'print(\"Hello, Guru\");print(\"how are you?\")'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    output,error = prochandle.communicate()
+    return output.decode()
 
 # %%
 #######################################
@@ -1633,8 +1674,8 @@ def update_allfuncs_dir():
     for eachdir in thepath.glob('*'):
         if eachdir.is_dir() and eachdir.name.endswith('_funcs'):
             eachfuncsdir = eachdir
-            if eachfuncsdir.name == 'all_funcs' or eachfuncsdir.name == 'scapy_funcs':
-                # ignore these two directories
+            if eachfuncsdir.name == 'all_funcs' or eachfuncsdir.name == 'scapy_funcs' or eachfuncsdir.name == 'pil_image_analysis_funcs':
+                # ignore these directories
                 pass
             else:
                 # for each file ending in .py (these should be the individual function tools ending in .py), copy that file to the destination dir
@@ -2056,13 +2097,14 @@ def remove_falsey_values_in_array(lst: list):
 # %%
 #######################################
 def new_module(source_dir: str, prepend_text=None):
-    """Creates a new module file consisting of all functions that reside in a given folder.  This tool is intended to receive the path of a given folder where the individual function .py files reside, and it will retrieve the content of each of those .py files, and put all of the content together in a single file in the "modules" directory (hard-coded in this script).  The new single file will have the same name as the given "source_dir" folder + the ".py" extension.
+    """Creates a new module file consisting of all functions that reside in a given folder.  This tool is intended to receive the path of a given folder where the individual function .py files reside, and it will retrieve the content of each of those .py files, and will put all of the content together in a single file in the "modules" directory (hard-coded within this script).  The new single 'module' file will have the same name as the given "source_dir" folder + the ".py" extension.  Additionally, the 'prepend_text' parameter can be used to add notes or import statements to the top of the module file (underneath the header, but before the functions are defined).
 
     Reference:
         https://stackoverflow.com/questions/47518669/create-new-folder-with-pathlib-and-write-files-into-it
 
     Args:
         source_dir (str): Reference the path of the directory where the function .py files reside
+        prepend_text (str, optional): Use this parameter in order to add text underneath the banner but before all of the functions, e.g. "from scapy.all import *". Defaults to None.
     """
     import pathlib
     
@@ -2075,10 +2117,10 @@ def new_module(source_dir: str, prepend_text=None):
     
     def new_module_header(source_dir_name: str):
         
-        def format_header_block(string: str):
-            """Prints a header for use with my function files
+        def format_header_block_plus(string: str):
+            """Returns a header for use with my function files.
 
-            Examples:
+            Example:
                 #######################################\n
                 ########### ARRAY FUNCTIONS ###########\n
                 #######################################\n
@@ -2092,7 +2134,7 @@ def new_module(source_dir: str, prepend_text=None):
             return newstring
         
         header_name = source_dir_name.replace('_', ' ').upper()
-        new_header = format_header_block(header_name)
+        new_header = format_header_block_plus(header_name)
         return new_header
     
     header_content = new_module_header(source_dir_pathobj.name)
@@ -2574,6 +2616,28 @@ def test_filepath(thepath: str):
 
 # %%
 #######################################
+def get_modules_ready_for_import():
+    """Returns a list of modules that are ready to be referenced with an 'import' statement.
+
+    Example:
+    >>> get_modules_for_import()\n
+        ['workspace', 'workspace_find-replace-in-functions', 'workspace_general', 'workspace_import_all_funcs', '__future__', '_bootlocale', '_collections_abc', '_compat_pickle', '_compression', '_dummy_thread', '_markupbase', '_osx_support', '_py_abc', '_pydecimal', '_pyio', '_sitebuiltins', '_strptime', '_sysconfigdata__linux_x86_64-linux-gnu', '_sysconfigdata__x86_64-linux-gnu', '_threading_local', '_weakrefset', 'abc', 'aifc', 'antigravity', ... ]
+
+    References:
+        # Good discussion of what/isn't present in the pkgutil output
+        https://stackoverflow.com/questions/37752054/how-can-i-list-all-packages-modules-available-to-python-from-within-a-python-scr\n
+        # Additional reference for use of 'pkgtutil.iter_modules()' to get "all importable modules"
+        https://stackoverflow.com/questions/8370206/how-to-get-a-list-of-built-in-modules-in-python\n
+
+    Returns:
+        list: Returns a list
+    """
+    import pkgutil
+    modules_ready_for_import = [e.name for e in pkgutil.iter_modules()]
+    return modules_ready_for_import
+
+# %%
+#######################################
 def format_header_block(string: str):
     """Prints a header for use with my function files
 
@@ -2649,6 +2713,24 @@ def invoke_lambda_demo(*args):
     for item in args:
         results.append((lambda x: x + x)(item))
     return results
+
+# %%
+#######################################
+def get_env(env_var=None):
+    """Returns the value of a given environment variable, or if no argument is given returns all environment variables and their values.
+
+    Args:
+        env_var (str, optional): Reference an environment variable. Defaults to None.
+
+    Returns:
+        str: Returns the string value of a given environment variable
+    """
+    import os
+    
+    if env_var:
+        return os.environ.get(env_var)
+    else:
+        return os.environ
 
 # %%
 #######################################
@@ -3096,6 +3178,45 @@ def get_file_stats(thepath: str):
 
 # %%
 #######################################
+def get_modules_complete_list():
+    """Returns a complete list of available modules.
+
+    References:
+        https://stackoverflow.com/questions/37752054/how-can-i-list-all-packages-modules-available-to-python-from-within-a-python-scr
+
+    Returns:
+        list: Returns a list of available module names
+    """
+    import sys
+    from pydoc import ModuleScanner
+    import warnings
+
+    original_sys_path_tuple = tuple(sys.path)
+    
+    def scan_modules():
+        """Scans for available modules using pydoc.ModuleScanner, taken from help('modules')"""
+        modules = {}
+        
+        def callback(path, modname, desc, modules=modules):
+            if modname and modname[-9:] == ".__init__":
+                modname = modname[:-9] + " (package)"
+            if modname.find(".") < 0:
+                modules[modname] = 1
+                
+        def onerror(modname):
+            callback(None, modname, None)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # ignore warnings from importing deprecated modules
+            ModuleScanner().run(callback, onerror=onerror)
+        return modules
+
+    all_modules = sorted(scan_modules().keys())
+    del sys.path
+    sys.path = list(original_sys_path_tuple)
+    return all_modules
+
+# %%
+#######################################
 def convert_bytes2string(thebytes: bytes):
     """Converts a "bytes" type object into a "str" type object
 
@@ -3258,6 +3379,24 @@ def split_string(string: str, size: int):
     created_step_points = range(0, len(string), size)
     sublists_created = [string[i : i + size] for i in created_step_points]
     return sublists_created
+
+# %%
+#######################################
+def format_header_block_plus(string: str):
+    """Returns a header for use with my function files.
+
+    Example:
+        #######################################\n
+        ########### ARRAY FUNCTIONS ###########\n
+        #######################################\n
+
+    """
+    newstring = ""
+    newstring += "{0:#<39}".format("") + "\n"
+    newstring += "{0:#^39}".format(f" {string} ") + "\n"
+    newstring += "{0:#<39}".format("") + "\n\n"
+    
+    return newstring
 
 # %%
 #######################################
@@ -4192,6 +4331,21 @@ def get_content_linenum_gzip(thepath: str, linenum: int):
     with gzip.open(path_obj, "rt") as f:
         lines = f.readlines()
     return lines[linenum - 1]
+
+# %%
+#######################################
+def invoke_module_reload(module_name: str):
+    """For a given module_name reloads the respective module by that name.
+
+    Reference:
+        https://stackoverflow.com/questions/7271082/how-to-reload-a-modules-function-in-python
+
+    Args:
+        module_name (str): Reference the name of the module you want to reload.
+    """
+    import sys
+    import importlib
+    importlib.reload(sys.modules[module_name])
 
 # %%
 #######################################

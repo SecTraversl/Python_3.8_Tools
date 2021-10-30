@@ -65,8 +65,13 @@ def update_module_files():
         if eachdir.is_dir() and eachdir.name.endswith('_funcs'):
             eachfuncsdir = eachdir
             if eachfuncsdir.name == 'all_funcs':
-                new_module(eachfuncsdir.as_posix(), prepend_text="# NOTE: Excludes scapy functions.  To import scapy functions, use 'from scapy_funcs import *'\n\n")
+                text_message = ''
+                text_message = text_message + "# NOTE: Excludes scapy functions.  To import scapy functions, use 'from scapy_funcs import *'\n"
+                text_message = text_message + "# NOTE: Excludes pil image analysis functions.  To import pil image analysis functions, use 'from pil_image_analysis_funcs *'\n\n"
+                new_module(eachfuncsdir.as_posix(), prepend_text=text_message)
             elif eachfuncsdir.name == 'scapy_funcs':
                 new_module(eachfuncsdir.as_posix(), prepend_text="from scapy.all import *\n\n")
+            elif eachfuncsdir.name == 'pil_image_analysis_funcs':
+                new_module(eachfuncsdir.as_posix(), prepend_text="from PIL import Image\nfrom PIL.ExifTags import TAGS\n\n")
             else:
                 new_module(eachfuncsdir.as_posix())
